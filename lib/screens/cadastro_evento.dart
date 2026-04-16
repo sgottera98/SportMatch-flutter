@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:nome_do_projeto/category/index.dart';
 import 'package:nome_do_projeto/components/baseScaffold.dart';
 import 'package:nome_do_projeto/components/button.dart';
 import 'package:nome_do_projeto/components/dropdownField.dart';
@@ -194,14 +195,7 @@ class _CriarEventoPageState extends State<CriarEventoPage> {
               CustomDropdownField(
                 label: "Categoria",
                 value: categoria.isEmpty ? null : categoria,
-                items: [
-                  'Feminino',
-                  'Masculino',
-                  'Misto',
-                  'Infantil',
-                  'Juvenil',
-                  'Outro',
-                ],
+                items: categorias,
                 onChanged: (val) => setState(() => categoria = val ?? ''),
                 validator:
                     (val) =>

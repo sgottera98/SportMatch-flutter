@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nome_do_projeto/colors/index.dart';
 import 'package:nome_do_projeto/components/baseScaffold.dart';
 import 'package:nome_do_projeto/components/button.dart';
+import 'package:nome_do_projeto/screens/editar_evento.dart';
 
 class EventPage extends StatefulWidget {
   final String eventoId;
@@ -36,6 +37,39 @@ class _EventPageState extends State<EventPage> {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  void _confirmarExclusao() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text('Excluir evento'),
+            content: Text('Tem certeza que deseja excluir este evento?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () async {
+                  await FirebaseFirestore.instance
+                      .collection('eventos')
+                      .doc(widget.eventoId)
+                      .delete();
+
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Evento excluído com sucesso')),
+                  );
+                },
+                child: Text('Excluir', style: TextStyle(color: Colors.red)),
+              ),
+            ],
+          ),
+    );
   }
 
   Future<void> _registrarParticipacao(Map<String, dynamic> data) async {
@@ -100,6 +134,12 @@ class _EventPageState extends State<EventPage> {
       data['participantes'] ?? [],
     );
 
+    final user = FirebaseAuth.instance.currentUser;
+    final isOwner =
+        user != null &&
+        participantes.isNotEmpty &&
+        participantes[0]['uid'] == user.uid;
+
     final diasSemana = [
       'Domingo',
       'Segunda-feira',
@@ -126,54 +166,69 @@ class _EventPageState extends State<EventPage> {
             ),
           ),
           const SizedBox(height: 24),
-
           Text(
             "Data: $dataFormatada",
-            textAlign: TextAlign.left,
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 4),
-          Text(
-            "Local: $local",
-            textAlign: TextAlign.left,
-            style: TextStyle(fontSize: 16),
-          ),
+          Text("Local: $local", style: TextStyle(fontSize: 16)),
           SizedBox(height: 4),
-          Text(
-            "Modalidade: $modalidade",
-            textAlign: TextAlign.left,
-            style: TextStyle(fontSize: 16),
-          ),
+          Text("Modalidade: $modalidade", style: TextStyle(fontSize: 16)),
           SizedBox(height: 4),
-          Text(
-            "Categoria: $categoria",
-            textAlign: TextAlign.left,
-            style: TextStyle(fontSize: 16),
-          ),
+          Text("Categoria: $categoria", style: TextStyle(fontSize: 16)),
           SizedBox(height: 4),
-          Text(
-            "Descrição: $descricao",
-            textAlign: TextAlign.left,
-            style: TextStyle(fontSize: 16),
-          ),
+          Text("Descrição: $descricao", style: TextStyle(fontSize: 16)),
           SizedBox(height: 4),
           Text(
             "Confirmados: ${participantes.length}",
-            textAlign: TextAlign.left,
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 4),
-          const SizedBox(height: 32),
-
-          Align(
-            alignment: Alignment.centerRight,
-            child: FractionallySizedBox(
-              widthFactor: 0.3,
-              child: RoundedButton(
-                label: 'Participar',
-                onPressed: () => _registrarParticipacao(data),
+          SizedBox(height: 32),
+          Column(
+            children: [
+              Align(
+                alignment: Alignment.centerRight,
+                child: FractionallySizedBox(
+                  child: RoundedButton(
+                    label: 'Participar',
+                    onPressed: () => _registrarParticipacao(data),
+                  ),
+                ),
               ),
-            ),
+              if (isOwner) ...[
+                SizedBox(height: 10),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: FractionallySizedBox(
+                    child: RoundedButton(
+                      label: 'Editar Evento',
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => EditarEventoPage(
+                                  eventoId: widget.eventoId,
+                                  usuarioId: user.uid,
+                                ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: FractionallySizedBox(
+                    child: RoundedButton(
+                      label: 'Excluir Evento',
+                      onPressed: _confirmarExclusao,
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
         ],
       ),
