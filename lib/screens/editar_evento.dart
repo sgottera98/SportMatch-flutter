@@ -263,7 +263,7 @@ class _EditarEventoPageState extends State<EditarEventoPage> {
               SizedBox(height: 36),
 
               FractionallySizedBox(
-                widthFactor: 0.5,
+                widthFactor: 0.7,
                 alignment: Alignment.centerRight,
                 child: RoundedButton(
                   label: "Salvar alterações",
